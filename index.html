@@ -481,14 +481,18 @@ const WD_KO=['일','월','화','수','목','금','토'];
 const recipeCache={};
 
 async function load(k){
-  // Firebase 우선, 없으면 localStorage fallback
-  if(window.fbLoad) return await window.fbLoad(k.replace(/[.#$[\]]/g,'_'));
-  try{ const v=localStorage.getItem(k); return v?JSON.parse(v):null; }catch{ return null; }
+  const safeKey = k.replace(/[.#$[\]]/g,'_');
+  if(window.fbLoad) {
+    try { const v=await window.fbLoad(safeKey); if(v!==null) return v; } catch(e){}
+  }
+  try { const v=localStorage.getItem(k); return v?JSON.parse(v):null; } catch{ return null; }
 }
 async function save(k,v){
   const safeKey = k.replace(/[.#$[\]]/g,'_');
-  if(window.fbSave) await window.fbSave(safeKey, v);
-  try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){}
+  // localStorage 먼저 (항상 성공)
+  try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){}
+  // Firebase는 실패해도 에러 무시
+  if(window.fbSave) { try { await window.fbSave(safeKey, v); } catch(e){ console.warn('Firebase save failed:', e); } }
 }
 
 function callAI(prompt, max=1000){
@@ -731,7 +735,8 @@ async function addFridgeItem(){
     renderFridgeCarousel();
     renderFridgeStrip();
   }catch(e){
-    alert('추가 실패. 다시 시도해주세요.');
+    console.error('addFridgeItem error:', e);
+    alert('추가 실패: ' + e.message);
   }finally{
     btn.disabled=false; btn.textContent='추가';
   }
