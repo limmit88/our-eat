@@ -1018,6 +1018,24 @@ function copyLink(){
 
 // ── Init ──
 document.addEventListener('DOMContentLoaded', function() {
+  // SES(MetaMask 등) 환경 대응 - onclick에서 쓰는 함수들 window에 명시 등록
+  window.showScreen = showScreen;
+  window.setUser = setUser;
+  window.selectWeek = selectWeek;
+  window.selectWeekPlan = selectWeekPlan;
+  window.selectDate = selectDate;
+  window.addFridgeItem = addFridgeItem;
+  window.deleteFridgeItem = deleteFridgeItem;
+  window.updateExpDate = updateExpDate;
+  window.recommendFromFridge = recommendFromFridge;
+  window.openFridgeRecipe = openFridgeRecipe;
+  window.saveWeight = saveWeight;
+  window.saveExercise = saveExercise;
+  window.generatePlan = generatePlan;
+  window.openRecipe = openRecipe;
+  window.closeRecipe = closeRecipe;
+  window.copyLink = copyLink;
+
   buildDateStrip();
   renderToday();
   if(window.fbWatch) {
