@@ -690,31 +690,51 @@ async function renderFridgeCarousel(){
   }).join('');
 }
 
+// ── 유통기한 로컬 맵 ──
+const EXP_DAYS = {
+  '달걀':21,'계란':21,'닭가슴살':3,'닭':3,'소고기':3,'돼지고기':3,'삼겹살':3,'목살':3,
+  '연어':2,'참치캔':730,'새우':2,'두부':5,'브로콜리':5,'시금치':4,'양상추':5,
+  '파프리카':7,'토마토':5,'방울토마토':7,'오이':7,'당근':14,'고구마':14,
+  '바나나':5,'딸기':5,'사과':14,'키위':7,'아몬드':60,'견과류':60,
+  '현미':180,'통밀식빵':5,'식빵':5,'또띠아':7,'미역':7,
+  '김치':60,'된장':90,'간장':180,'참기름':180,'올리브오일':180,
+  '콩나물':3,'숙주':3,'파':7,'마늘':14,'양파':21,'버섯':5,'감자':21,
+  '우유':7,'요거트':14,'치즈':14,'버터':30,
+};
+function getExpDays(name) {
+  for(const [k,v] of Object.entries(EXP_DAYS)) {
+    if(name.includes(k)) return v;
+  }
+  return 7; // 기본값 7일
+}
+
 async function addFridgeItem(){
   const input=document.getElementById('fridge-input');
-  const name=input.value.trim();
-  if(!name)return;
+  const raw=input.value.trim();
+  if(!raw)return;
   const btn=document.getElementById('fadd-btn');
   btn.disabled=true; btn.textContent='추가 중...';
-  const prompt=`한국 냉장고 식재료 유통기한 전문가. 아래 재료들의 냉장 보관 유통기한을 JSON 배열로만 답하세요. 마크다운 없이 순수 JSON만.
-재료: ${name}
-형식: [{"name":"재료명","days":숫자}]
-규칙: 채소류 평균, 육류는 냉장기준, 가공식품은 개봉후 기준. 쉼표로 구분된 여러 재료는 각각 배열 항목으로.`;
+
   try{
-    const text=await callAI(prompt,400);
-    const items=JSON.parse(text);
-    const fridge=await load('fridge')||[];
-    const today=new Date();
-    items.forEach(item=>{
-      const exp=new Date(today); exp.setDate(exp.getDate()+item.days);
-      fridge.push({name:item.name,days:item.days,expDate:exp.toISOString().slice(0,10),addedDate:today.toISOString().slice(0,10)});
+    // 쉼표로 구분된 재료 파싱
+    const names = raw.split(',').map(s=>s.trim()).filter(Boolean);
+    const fridge = await load('fridge')||[];
+    const today = new Date();
+    names.forEach(name=>{
+      const days = getExpDays(name);
+      const exp = new Date(today);
+      exp.setDate(exp.getDate()+days);
+      fridge.push({name, days, expDate:exp.toISOString().slice(0,10), addedDate:today.toISOString().slice(0,10)});
     });
-    await save('fridge',fridge);
+    await save('fridge', fridge);
     input.value='';
     renderFridgeCarousel();
     renderFridgeStrip();
-  }catch(e){alert('추가 실패. 다시 시도해주세요.');}
-  finally{btn.disabled=false;btn.textContent='추가';}
+  }catch(e){
+    alert('추가 실패. 다시 시도해주세요.');
+  }finally{
+    btn.disabled=false; btn.textContent='추가';
+  }
 }
 
 async function deleteFridgeItem(idx){
