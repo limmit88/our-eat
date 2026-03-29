@@ -426,6 +426,34 @@ canvas { width: 100% !important; }
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
+// ── Firebase 초기화 (즉시 실행, CDN 로드 후) ──
+(function initFirebase() {
+  try {
+    if (typeof firebase === 'undefined') { console.warn('Firebase SDK 없음, localStorage 사용'); return; }
+    firebase.initializeApp({
+      apiKey: "AIzaSyDE0n13nOW5x02y3MaIkvet2epn2qSWOrA",
+      authDomain: "limmit01-5fb1c.firebaseapp.com",
+      databaseURL: "https://limmit01-5fb1c-default-rtdb.firebaseio.com",
+      projectId: "limmit01-5fb1c",
+      storageBucket: "limmit01-5fb1c.firebasestorage.app",
+      messagingSenderId: "55615464592",
+      appId: "1:55615464592:web:f5618797932c06459ea415"
+    });
+    const db = firebase.database();
+    window.fbLoad = async function(k) {
+      try { const s=await db.ref('diet/'+k).get(); return s.exists()?s.val():null; } catch(e){ return null; }
+    };
+    window.fbSave = async function(k,v) {
+      try { await db.ref('diet/'+k).set(v); } catch(e){ console.warn('fbSave:',e); }
+    };
+    window.fbWatch = function(k,cb) {
+      db.ref('diet/'+k).on('value', s=>cb(s.exists()?s.val():null));
+    };
+    console.log('Firebase OK');
+  } catch(e) { console.warn('Firebase 초기화 실패:', e); }
+})();
+</script>
+<script>
 // ── 재료 이모지 맵 ──
 const EMOJI_MAP = {
   '달걀':['🥚','계란'],'계란':['🥚'],'닭가슴살':['🍗'],'닭':['🍗'],'소고기':['🥩'],'돼지고기':['🥩'],'삼겹살':['🥩'],
@@ -990,55 +1018,13 @@ function copyLink(){
 
 // ── Init ──
 document.addEventListener('DOMContentLoaded', function() {
-  // Firebase 초기화
-  try {
-    const firebaseConfig = {
-      apiKey: "AIzaSyDE0n13nOW5x02y3MaIkvet2epn2qSWOrA",
-      authDomain: "limmit01-5fb1c.firebaseapp.com",
-      databaseURL: "https://limmit01-5fb1c-default-rtdb.firebaseio.com",
-      projectId: "limmit01-5fb1c",
-      storageBucket: "limmit01-5fb1c.firebasestorage.app",
-      messagingSenderId: "55615464592",
-      appId: "1:55615464592:web:f5618797932c06459ea415"
-    };
-    if (typeof firebase !== 'undefined') {
-      firebase.initializeApp(firebaseConfig);
-      const db = firebase.database();
-      window.fbLoad = async function(k) {
-        try { const snap = await db.ref('diet/'+k).get(); return snap.exists()?snap.val():null; }
-        catch(e) { console.warn('fbLoad fail:', e); return null; }
-      };
-      window.fbSave = async function(k, v) {
-        try { await db.ref('diet/'+k).set(v); }
-        catch(e) { console.warn('fbSave fail:', e); }
-      };
-      window.fbWatch = function(k, cb) {
-        db.ref('diet/'+k).on('value', snap => cb(snap.exists()?snap.val():null));
-      };
-      console.log('Firebase 초기화 완료');
-    }
-  } catch(e) { console.warn('Firebase 초기화 실패, localStorage 사용:', e); }
-
-  // 앱 시작
   buildDateStrip();
   renderToday();
-
-  // 실시간 구독
   if(window.fbWatch) {
-    window.fbWatch('weights', () => {
-      renderToday();
-      if(document.getElementById('screen-weight').classList.contains('active')) renderWeightScreen();
-    });
-    window.fbWatch('fridge', () => {
-      renderFridgeStrip();
-      if(document.getElementById('screen-fridge').classList.contains('active')) renderFridgeCarousel();
-    });
-    window.fbWatch('diet-plan', () => {
-      if(document.getElementById('screen-plan').classList.contains('active')) renderPlan();
-    });
-    window.fbWatch('exercise-records', () => {
-      if(document.getElementById('screen-weight').classList.contains('active')) renderExerciseRecords();
-    });
+    window.fbWatch('weights', ()=>{ renderToday(); if(document.getElementById('screen-weight').classList.contains('active')) renderWeightScreen(); });
+    window.fbWatch('fridge', ()=>{ renderFridgeStrip(); if(document.getElementById('screen-fridge').classList.contains('active')) renderFridgeCarousel(); });
+    window.fbWatch('diet-plan', ()=>{ if(document.getElementById('screen-plan').classList.contains('active')) renderPlan(); });
+    window.fbWatch('exercise-records', ()=>{ if(document.getElementById('screen-weight').classList.contains('active')) renderExerciseRecords(); });
   }
 });
 </script>
