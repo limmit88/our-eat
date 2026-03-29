@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>우리 식단 — 리미 & 남편</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f9fafb;
+    --white: #ffffff;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --blue-50: #eff6ff;
+    --blue-700: #1d4ed8;
+    --amber-50: #fffbeb;
+    --amber-700: #b45309;
+    --border: #e5e7eb;
+    --r: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 16px; }
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--gray-800);
+    min-height: 100vh;
+    display: flex; justify-content: center;
+  }
+  .app-wrap {
+    width: 100%; max-width: 480px;
+    background: var(--white);
+    min-height: 100vh;
+    position: relative;
+    padding-bottom: 72px;
+    box-shadow: 0 0 32px rgba(0,0,0,0.07);
+  }
+
+  /* Header */
+  .app-header {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px;
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .app-title { font-size: 17px; font-weight: 500; color: var(--gray-800); }
+  .app-subtitle { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
+  .user-switch { display: flex; gap: 6px; }
+  .user-btn {
+    font-size: 12px; font-weight: 500; padding: 5px 14px; border-radius: 20px;
+    border: 1px solid var(--gray-300); background: transparent;
+    cursor: pointer; color: var(--gray-600); font-family: inherit; transition: all 0.18s;
+  }
+  .user-btn.active { background: var(--gray-700); color: white; border-color: var(--gray-700); }
+
+  /* Bottom nav */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 480px;
+    background: var(--white); border-top: 1px solid var(--border);
+    display: flex; justify-content: space-around; padding: 10px 0 14px; z-index: 100;
+  }
+  .nav-item {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    font-size: 10px; color: var(--gray-400); cursor: pointer;
+    padding: 4px 12px; background: none; border: none; font-family: inherit; transition: color 0.15s;
+  }
+  .nav-item svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; }
+  .nav-item.active { color: var(--gray-800); }
+
+  /* Screens */
+  .screen { display: none; padding: 14px; }
+  .screen.active { display: block; }
+
+  /* Cards */
+  .card { background: var(--white); border-radius: var(--r); border: 1px solid var(--border); padding: 16px; margin-bottom: 10px; }
+  .card-title { font-size: 13px; font-weight: 500; color: var(--gray-500); margin-bottom: 12px; }
+
+  /* Hero */
+  .today-hero {
+    background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
+    border-radius: var(--r); padding: 18px; margin-bottom: 10px; border: 1px solid var(--gray-200);
+  }
+  .today-date { font-size: 12px; color: var(--gray-400); margin-bottom: 4px; }
+  .today-greeting { font-size: 18px; font-weight: 500; color: var(--gray-800); }
+  .motivate-msg { font-size: 12px; color: var(--gray-600); line-height: 1.65; margin-top: 10px; padding: 10px 12px; background: rgba(255,255,255,0.8); border-radius: 8px; }
+
+  /* Goal banner */
+  .goal-banner { background: var(--white); border: 1px solid var(--border); border-radius: var(--r); padding: 14px 16px; display: flex; gap: 16px; margin-bottom: 10px; }
+  .goal-person { flex: 1; text-align: center; }
+  .goal-name { font-size: 11px; color: var(--gray-400); margin-bottom: 4px; }
+  .goal-weight { font-size: 22px; font-weight: 700; color: var(--gray-700); }
+  .goal-sub { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
+  .goal-divider { width: 1px; background: var(--gray-200); }
+
+  /* Progress rings */
+  .progress-row { display: flex; gap: 10px; margin-bottom: 10px; }
+  .progress-card { flex: 1; background: var(--white); border-radius: var(--r); border: 1px solid var(--border); padding: 14px; text-align: center; }
+  .ring-wrap { position: relative; width: 64px; height: 64px; margin: 0 auto 8px; }
+  .ring-wrap svg { transform: rotate(-90deg); }
+  .ring-bg { fill: none; stroke: var(--gray-100); stroke-width: 5; }
+  .ring-fg { fill: none; stroke: var(--gray-600); stroke-width: 5; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease; }
+  .ring-label { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--gray-700); }
+  .progress-name { font-size: 11px; color: var(--gray-400); }
+  .progress-kcal { font-size: 11px; color: var(--gray-500); margin-top: 2px; }
+
+  /* Meal check */
+  .meal-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--gray-100); cursor: pointer; }
+  .meal-item:last-child { border-bottom: none; }
+  .meal-check { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--gray-300); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; transition: all 0.18s; color: transparent; }
+  .meal-check.done { background: var(--gray-700); border-color: var(--gray-700); color: white; }
+  .meal-info { flex: 1; }
+  .meal-type-tag { display: inline-block; font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 6px; margin-bottom: 3px; }
+  .tag-morning { background: var(--gray-100); color: var(--gray-700); }
+  .tag-lunch { background: var(--blue-50); color: var(--blue-700); }
+  .tag-dinner { background: var(--amber-50); color: var(--amber-700); }
+  .meal-name { font-size: 13px; color: var(--gray-800); line-height: 1.4; }
+  .meal-name.done { color: var(--gray-400); text-decoration: line-through; }
+  .meal-meta { font-size: 11px; color: var(--gray-500); margin-top: 2px; display: flex; align-items: center; gap: 4px; }
+  .recipe-btn { font-size: 11px; color: var(--gray-500); border: none; background: none; cursor: pointer; padding: 0; font-family: inherit; text-decoration: underline; text-underline-offset: 2px; }
+  .recipe-btn:hover { color: var(--gray-700); }
+
+  /* Weight */
+  .weight-inputs { display: flex; gap: 10px; margin-bottom: 14px; }
+  .weight-box { flex: 1; }
+  .weight-box label { font-size: 11px; color: var(--gray-500); display: block; margin-bottom: 6px; }
+  .weight-box input { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--gray-300); font-size: 15px; font-family: inherit; background: var(--gray-50); color: var(--gray-800); text-align: center; transition: border-color 0.18s; }
+  .weight-box input:focus { outline: none; border-color: var(--gray-500); }
+  .save-btn { width: 100%; padding: 12px; border-radius: 8px; background: var(--gray-700); color: white; border: none; font-size: 14px; font-weight: 500; font-family: inherit; cursor: pointer; transition: background 0.18s; }
+  .save-btn:hover { background: var(--gray-800); }
+  .chart-area { margin-top: 12px; height: 160px; }
+  canvas { width: 100% !important; }
+  .history-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--gray-100); font-size: 13px; }
+  .history-row:last-child { border-bottom: none; }
+
+  /* Plan */
+  .week-selector { display: flex; gap: 8px; margin-bottom: 12px; }
+  .week-btn { font-size: 12px; font-weight: 500; padding: 6px 16px; border-radius: 20px; border: 1px solid var(--gray-300); background: transparent; cursor: pointer; color: var(--gray-600); font-family: inherit; transition: all 0.18s; }
+  .week-btn.active { background: var(--gray-700); color: white; border-color: var(--gray-700); }
+  .day-card { background: var(--white); border-radius: var(--r); border: 1px solid var(--border); margin-bottom: 8px; overflow: hidden; }
+  .day-header { padding: 10px 14px; background: var(--gray-50); border-bottom: 1px solid var(--gray-200); font-size: 13px; font-weight: 500; color: var(--gray-700); display: flex; justify-content: space-between; align-items: center; }
+  .day-total { font-size: 11px; color: var(--gray-500); font-weight: 400; }
+  .day-meals { padding: 4px 14px; }
+  .day-meal-row { padding: 10px 0; border-bottom: 1px solid var(--gray-100); cursor: pointer; transition: background 0.15s; border-radius: 6px; }
+  .day-meal-row:last-child { border-bottom: none; }
+  .day-meal-row:hover { background: var(--gray-50); padding: 10px 6px; margin: 0 -6px; }
+  .day-meal-name { font-size: 13px; color: var(--gray-800); margin-top: 2px; }
+  .day-meal-kcal { font-size: 11px; color: var(--gray-500); margin-top: 2px; }
+
+  /* AI btn */
+  .ai-btn { width: 100%; padding: 13px; border-radius: 10px; background: var(--gray-700); color: white; border: none; font-size: 14px; font-weight: 500; font-family: inherit; cursor: pointer; transition: all 0.18s; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .ai-btn:hover { background: var(--gray-800); }
+  .ai-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+  .ai-loading { display: none; text-align: center; padding: 20px; color: var(--gray-500); font-size: 13px; }
+
+  /* Share */
+  .share-card { text-align: center; padding: 24px 16px; }
+  .share-link-box { background: var(--gray-50); border: 1px solid var(--gray-300); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: var(--gray-500); word-break: break-all; margin-bottom: 10px; }
+  .copy-btn { width: 100%; padding: 12px; border-radius: 8px; background: var(--gray-700); color: white; border: none; font-size: 14px; font-weight: 500; font-family: inherit; cursor: pointer; margin-bottom: 6px; transition: background 0.18s; }
+  .copy-btn:hover { background: var(--gray-800); }
+
+  .empty { text-align: center; padding: 32px; color: var(--gray-400); font-size: 13px; }
+
+  /* Recipe modal */
+  .modal-overlay { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.35); align-items: flex-end; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal-sheet { background: var(--white); border-radius: 18px 18px 0 0; width: 100%; max-width: 480px; max-height: 82vh; overflow-y: auto; padding-bottom: 40px; animation: slideUp 0.25s ease; }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-handle { width: 36px; height: 4px; background: var(--gray-200); border-radius: 2px; margin: 12px auto 0; }
+  .modal-header { padding: 14px 20px 12px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; }
+  .modal-title { font-size: 16px; font-weight: 500; color: var(--gray-800); line-height: 1.4; flex: 1; }
+  .modal-close { font-size: 18px; color: var(--gray-400); cursor: pointer; padding: 0 0 0 12px; background: none; border: none; }
+  .modal-body { padding: 16px 20px; }
+  .kcal-badge { display: flex; gap: 16px; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; }
+  .kcal-badge span { font-size: 12px; color: var(--gray-500); }
+  .kcal-badge strong { color: var(--gray-800); }
+  .recipe-section { margin-bottom: 18px; }
+  .recipe-section-title { font-size: 11px; font-weight: 500; color: var(--gray-400); letter-spacing: 0.6px; margin-bottom: 8px; text-transform: uppercase; }
+  .ingredient-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ingredient-chip { font-size: 12px; background: var(--gray-100); color: var(--gray-700); border-radius: 20px; padding: 4px 10px; }
+  .step-item { display: flex; gap: 10px; margin-bottom: 10px; }
+  .step-num { width: 22px; height: 22px; border-radius: 50%; background: var(--gray-700); color: white; font-size: 11px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .step-text { font-size: 13px; color: var(--gray-700); line-height: 1.65; }
+  .recipe-tip { background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: var(--gray-600); line-height: 1.6; }
+  .recipe-loading { text-align: center; padding: 32px 20px; color: var(--gray-400); font-size: 13px; }
+
+  /* Fridge */
+  .fridge-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--r); margin-bottom: 10px; overflow: hidden; }
+  .fridge-header { padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+  .fridge-header-left { display: flex; align-items: center; gap: 8px; }
+  .fridge-header-title { font-size: 13px; font-weight: 500; color: var(--gray-700); }
+  .fridge-count { font-size: 11px; color: var(--gray-400); }
+  .fridge-toggle-icon { font-size: 10px; color: var(--gray-400); transition: transform 0.2s; display: inline-block; }
+  .fridge-toggle-icon.open { transform: rotate(180deg); }
+  .fridge-body { padding: 0 16px 14px; border-top: 1px solid var(--gray-100); display: none; }
+  .fridge-input-row { display: flex; gap: 8px; margin-top: 12px; margin-bottom: 12px; }
+  .fridge-input { flex: 1; padding: 9px 12px; border: 1px solid var(--gray-200); border-radius: 8px; font-size: 13px; font-family: inherit; color: var(--gray-800); background: var(--gray-50); }
+  .fridge-input:focus { outline: none; border-color: var(--gray-400); background: var(--white); }
+  .fridge-add-btn { padding: 9px 14px; border-radius: 8px; background: var(--gray-700); color: white; border: none; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; white-space: nowrap; transition: background 0.15s; }
+  .fridge-add-btn:hover { background: var(--gray-800); }
+  .fridge-add-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .fridge-items { display: flex; flex-direction: column; gap: 6px; }
+  .fridge-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--gray-50); border-radius: 8px; border: 1px solid var(--gray-100); }
+  .fridge-item-name { flex: 1; font-size: 13px; color: var(--gray-800); }
+  .fridge-item-exp { font-size: 11px; padding: 2px 8px; border-radius: 10px; white-space: nowrap; font-weight: 500; }
+  .exp-fresh { background: #ecfdf5; color: #065f46; }
+  .exp-soon { background: #fffbeb; color: #92400e; }
+  .exp-danger { background: #fef2f2; color: #991b1b; }
+  .fridge-item-del { font-size: 16px; color: var(--gray-300); cursor: pointer; background: none; border: none; padding: 0 2px; line-height: 1; }
+  .fridge-item-del:hover { color: var(--gray-500); }
+  .shopping-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--gray-100); }
+  .shopping-title { font-size: 11px; font-weight: 500; color: var(--gray-400); letter-spacing: 0.4px; margin-bottom: 8px; text-transform: uppercase; }
+  .shopping-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .shopping-chip { font-size: 12px; background: var(--gray-100); color: var(--gray-600); border-radius: 20px; padding: 3px 10px; }
+  .fridge-empty { font-size: 12px; color: var(--gray-400); text-align: center; padding: 12px 0; }
+  .fridge-ai-loading { font-size: 12px; color: var(--gray-400); padding: 4px 0; }
+</style>
+</head>
+<body>
+<div class="app-wrap">
+
+<header class="app-header">
+  <div>
+    <div class="app-title">🥗 우리 식단</div>
+    <div class="app-subtitle">리미 &amp; 남편의 다이어트 플래너</div>
+  </div>
+  <div class="user-switch">
+    <button class="user-btn active" onclick="setUser('rimi',this)">리미</button>
+    <button class="user-btn" onclick="setUser('hub',this)">남편</button>
+  </div>
+</header>
+
+<!-- Today -->
+<div class="screen active" id="screen-today">
+  <div class="today-hero">
+    <div class="today-date" id="today-date"></div>
+    <div class="today-greeting" id="today-greeting">오늘도 잘 하고 있어요 💪</div>
+  </div>
+
+  <!-- 냉장고 카드 -->
+  <div class="fridge-card">
+    <div class="fridge-header" onclick="toggleFridge()">
+      <div class="fridge-header-left">
+        <span style="font-size:16px">🧊</span>
+        <span class="fridge-header-title">우리 냉장고</span>
+        <span class="fridge-count" id="fridge-count"></span>
+      </div>
+      <span class="fridge-toggle-icon" id="fridge-toggle-icon">▼</span>
+    </div>
+    <div class="fridge-body" id="fridge-body">
+      <div class="fridge-input-row">
+        <input class="fridge-input" id="fridge-input" placeholder="재료 입력 (예: 달걀, 닭가슴살)" onkeydown="if(event.key==='Enter')addFridgeItem()">
+        <button class="fridge-add-btn" id="fridge-add-btn" onclick="addFridgeItem()">추가</button>
+      </div>
+      <div class="fridge-items" id="fridge-items">
+        <div class="fridge-empty">냉장고가 비어있어요. 재료를 추가해보세요!</div>
+      </div>
+      <div class="shopping-section" id="shopping-section" style="display:none">
+        <div class="shopping-title">🛒 장볼 재료</div>
+        <div class="shopping-chips" id="shopping-chips"></div>
+      </div>
+    </div>
+  </div>
+  <div class="goal-banner">
+    <div class="goal-person">
+      <div class="goal-name">리미 현재</div>
+      <div class="goal-weight" id="rimi-current-display">68kg</div>
+      <div class="goal-sub">목표 60kg</div>
+    </div>
+    <div class="goal-divider"></div>
+    <div class="goal-person">
+      <div class="goal-name">남편 현재</div>
+      <div class="goal-weight" id="hub-current-display">65kg</div>
+      <div class="goal-sub">목표 60kg</div>
+    </div>
+  </div>
+  <div class="progress-row">
+    <div class="progress-card">
+      <div class="ring-wrap">
+        <svg viewBox="0 0 64 64" width="64" height="64">
+          <circle class="ring-bg" cx="32" cy="32" r="27"/>
+          <circle class="ring-fg" id="ring-rimi" cx="32" cy="32" r="27" stroke-dasharray="170" stroke-dashoffset="170"/>
+        </svg>
+        <div class="ring-label" id="pct-rimi">0%</div>
+      </div>
+      <div class="progress-name">리미</div>
+      <div class="progress-kcal" id="kcal-rimi">0 / 1350 kcal</div>
+    </div>
+    <div class="progress-card">
+      <div class="ring-wrap">
+        <svg viewBox="0 0 64 64" width="64" height="64">
+          <circle class="ring-bg" cx="32" cy="32" r="27"/>
+          <circle class="ring-fg" id="ring-hub" cx="32" cy="32" r="27" stroke-dasharray="170" stroke-dashoffset="170"/>
+        </svg>
+        <div class="ring-label" id="pct-hub">0%</div>
+      </div>
+      <div class="progress-name">남편</div>
+      <div class="progress-kcal" id="kcal-hub">0 / 1600 kcal</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">오늘 식사 체크</div>
+    <div id="today-meals-list"></div>
+  </div>
+</div>
+
+<!-- Plan -->
+<div class="screen" id="screen-plan">
+  <button class="ai-btn" onclick="generatePlan()" id="ai-gen-btn">✨ AI로 이번 주 식단 새로 생성</button>
+  <div class="ai-loading" id="ai-loading">🤖 AI가 맞춤 식단을 만들고 있어요...<br><span style="font-size:12px;color:var(--gray-400)">약 10~20초 소요</span></div>
+  <div class="week-selector">
+    <button class="week-btn active" onclick="selectWeek(1,this)">1주차</button>
+    <button class="week-btn" onclick="selectWeek(2,this)">2주차</button>
+  </div>
+  <div id="plan-list"></div>
+</div>
+
+<!-- Weight -->
+<div class="screen" id="screen-weight">
+  <div class="card">
+    <div class="card-title">몸무게 기록</div>
+    <div class="weight-inputs">
+      <div class="weight-box"><label>리미 (kg)</label><input type="number" id="input-rimi" placeholder="68.0" step="0.1"></div>
+      <div class="weight-box"><label>남편 (kg)</label><input type="number" id="input-hub" placeholder="65.0" step="0.1"></div>
+    </div>
+    <button class="save-btn" onclick="saveWeight()">오늘 기록 저장</button>
+  </div>
+  <div class="card" id="chart-card" style="display:none">
+    <div class="card-title">몸무게 변화</div>
+    <div class="chart-area"><canvas id="weight-chart"></canvas></div>
+  </div>
+  <div class="card" id="history-card" style="display:none">
+    <div class="card-title">최근 기록</div>
+    <div id="weight-history"></div>
+  </div>
+  <div class="card" id="empty-weight-card"><div class="empty">아직 기록이 없어요</div></div>
+</div>
+
+<!-- Share -->
+<div class="screen" id="screen-share">
+  <div class="card share-card">
+    <div style="font-size:36px;margin-bottom:12px">🔗</div>
+    <div style="font-size:18px;font-weight:500;color:var(--gray-800);margin-bottom:8px">남편과 함께 사용해요</div>
+    <div style="font-size:13px;color:var(--gray-600);line-height:1.7;margin-bottom:16px">아래 링크를 남편에게 공유하면<br>같은 식단과 기록을 함께 볼 수 있어요.</div>
+    <div class="share-link-box" id="share-link-box">링크 생성 중...</div>
+    <button class="copy-btn" onclick="copyLink()">📋 링크 복사하기</button>
+    <div style="font-size:11px;color:var(--gray-400)">카카오톡이나 문자로 전송해보세요</div>
+  </div>
+  <div class="card">
+    <div class="card-title">공유 데이터 안내</div>
+    <div style="font-size:13px;color:var(--gray-600);line-height:2.1;">
+      ✅ 식단 계획 — 함께 공유<br>
+      ✅ 오늘 식사 체크 — 각자 기록<br>
+      ✅ 몸무게 그래프 — 둘 다 표시<br>
+      ⚡ 데이터는 이 앱 안에 저장됩니다
+    </div>
+  </div>
+</div>
+
+<!-- Recipe Modal -->
+<div class="modal-overlay" id="recipe-modal" onclick="closeRecipeIfOutside(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title" id="recipe-modal-title">레시피</div>
+      <button class="modal-close" onclick="closeRecipe()">✕</button>
+    </div>
+    <div class="modal-body" id="recipe-modal-body">
+      <div class="recipe-loading">🤖 레시피를 불러오는 중...</div>
+    </div>
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="showScreen('today',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 10.5L12 4l8 6.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1v-9.5z"/>
+      <path d="M9 21v-7h6v7"/>
+    </svg>오늘
+  </button>
+  <button class="nav-item" onclick="showScreen('plan',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="5" width="18" height="17" rx="2"/>
+      <path d="M8 3v4M16 3v4"/>
+      <line x1="3" y1="11" x2="21" y2="11"/>
+      <line x1="8" y1="15" x2="10" y2="15"/>
+      <line x1="8" y1="18" x2="10" y2="18"/>
+      <line x1="13" y1="15" x2="16" y2="15"/>
+      <line x1="13" y1="18" x2="16" y2="18"/>
+    </svg>식단
+  </button>
+  <button class="nav-item" onclick="showScreen('weight',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3a9 9 0 100 18A9 9 0 0012 3z"/>
+      <path d="M12 12l-4-3"/>
+      <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/>
+      <path d="M7.5 17h9"/>
+      <path d="M8 7.5l1 1M16 7.5l-1 1M5.5 12h1M17.5 12h1"/>
+    </svg>몸무게
+  </button>
+  <button class="nav-item" onclick="showScreen('share',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="17" cy="5" r="2.5"/>
+      <circle cx="7" cy="12" r="2.5"/>
+      <circle cx="17" cy="19" r="2.5"/>
+      <line x1="9.4" y1="13.2" x2="14.6" y2="17.8"/>
+      <line x1="14.6" y1="6.2" x2="9.4" y2="10.8"/>
+    </svg>공유
+  </button>
+</nav>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+let currentUser='rimi', currentWeek=1, weightChart=null;
+const GOALS={rimi:{kcal:1350},hub:{kcal:1600}};
+const DAYS=['월','화','수','목','금','토','일'];
+const MOTIVATIONS=["작은 한 끼가 큰 변화를 만들어요. 오늘도 잘 하고 있어요 🌿","포기하지 않는 것 자체가 성공이에요. 함께니까 할 수 있어요 💕","어제보다 0.1kg만 가벼워도 충분해요. 꾸준함이 답이에요 ✨","몸이 변하는 건 시간이 걸려요. 지금 이 순간이 미래를 만들어요 🌱","오늘 식단 체크 완료하면 하루가 성공이에요 🎯","둘이 함께하니 더 든든하죠? 오늘도 파이팅! 💪","건강한 몸은 건강한 마음에서 시작해요. 잘 먹고 잘 지내요 🥗"];
+
+async function load(k){try{const r=await window.storage.get(k,true);return r?JSON.parse(r.value):null;}catch{return null;}}
+async function save(k,v){try{await window.storage.set(k,JSON.stringify(v),true);}catch(e){}}
+
+function showScreen(name,btn){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  btn.classList.add('active');
+  if(name==='weight')renderWeightChart();
+  if(name==='plan')renderPlan();
+  if(name==='share')setupShare();
+}
+function setUser(user,btn){
+  currentUser=user;
+  document.querySelectorAll('.user-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderToday();
+}
+
+function getDefaultDay(i){
+  const d=[
+    {morning:{name:'참치 삼각김밥 + 삶은 달걀 1개',kcal_rimi:280,kcal_hub:330},lunch:{name:'제육볶음 정식 (밥 반공기)',kcal_rimi:500,kcal_hub:550},dinner:{name:'닭가슴살 + 브로콜리 + 방울토마토',kcal_rimi:350,kcal_hub:450}},
+    {morning:{name:'고구마 1개 + 삶은 달걀 2개',kcal_rimi:310,kcal_hub:360},lunch:{name:'비빔밥 (고기추가, 소스 절반)',kcal_rimi:500,kcal_hub:550},dinner:{name:'두부구이 + 오이무침 + 현미밥 반공기',kcal_rimi:380,kcal_hub:480}},
+    {morning:{name:'바나나 1개 + 삶은 달걀 1개 + 아몬드 10알',kcal_rimi:290,kcal_hub:340},lunch:{name:'생선구이 정식 (밥 반공기)',kcal_rimi:480,kcal_hub:530},dinner:{name:'계란찜 + 시금치나물 + 현미밥 반공기',kcal_rimi:370,kcal_hub:470}},
+    {morning:{name:'고구마 1개 + 삶은 달걀 1개 + 아몬드 10알',kcal_rimi:310,kcal_hub:360},lunch:{name:'삼계탕 or 설렁탕 (국물 절반)',kcal_rimi:480,kcal_hub:530},dinner:{name:'닭가슴살 샐러드 랩 (또띠아 1장)',kcal_rimi:360,kcal_hub:460}},
+    {morning:{name:'참치 삼각김밥 + 방울토마토',kcal_rimi:270,kcal_hub:320},lunch:{name:'된장찌개 정식 (밥 반공기)',kcal_rimi:480,kcal_hub:530},dinner:{name:'소고기 불고기 + 숙주나물 + 현미밥 반공기',kcal_rimi:420,kcal_hub:520}},
+    {morning:{name:'고구마 1개 + 삶은 달걀 2개 + 바나나 반개',kcal_rimi:330,kcal_hub:380},lunch:{name:'자유식 (600kcal 이내)',kcal_rimi:500,kcal_hub:600},dinner:{name:'두부스크램블 + 방울토마토 + 통밀식빵 1장',kcal_rimi:390,kcal_hub:480}},
+    {morning:{name:'바나나 1개 + 삶은 달걀 2개',kcal_rimi:280,kcal_hub:330},lunch:{name:'집밥 or 외식 (자유)',kcal_rimi:500,kcal_hub:600},dinner:{name:'미역국 + 삶은 달걀 + 현미밥 반공기',kcal_rimi:320,kcal_hub:420}},
+  ];
+  return d[i]||d[0];
+}
+
+async function renderToday(){
+  const now=new Date();
+  document.getElementById('today-date').textContent=now.toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
+  const weights=await load('weights')||[];
+  const latest=weights[weights.length-1];
+  document.getElementById('rimi-current-display').textContent=(latest?.rimi||68)+'kg';
+  document.getElementById('hub-current-display').textContent=(latest?.hub||65)+'kg';
+  const plan=await load('diet-plan');
+  const todayIdx=Math.min(now.getDay()===0?6:now.getDay()-1,6);
+  const tm=plan?.week1?.[todayIdx]||getDefaultDay(todayIdx);
+  const dateKey=now.toISOString().slice(0,10);
+  const checks=await load('checks-'+dateKey)||{};
+  const mealDefs=[
+    {key:'morning',label:'아침',tag:'tag-morning',data:tm.morning},
+    {key:'lunch',label:'점심',tag:'tag-lunch',data:tm.lunch},
+    {key:'dinner',label:'저녁',tag:'tag-dinner',data:tm.dinner}
+  ];
+  let doneKcal=0;
+  const goalKcal=GOALS[currentUser].kcal;
+  const list=document.getElementById('today-meals-list');
+  list.innerHTML='';
+  mealDefs.forEach(m=>{
+    const done=!!checks[m.key];
+    const kcal=currentUser==='rimi'?(m.data.kcal_rimi||300):(m.data.kcal_hub||350);
+    if(done)doneKcal+=kcal;
+    const name=m.data.name||'식단 정보 없음';
+    const div=document.createElement('div');
+    div.className='meal-item';
+    div.innerHTML=`<div class="meal-check ${done?'done':''}">${done?'✓':''}</div>
+      <div class="meal-info">
+        <div><span class="meal-type-tag ${m.tag}">${m.label}</span></div>
+        <div class="meal-name ${done?'done':''}">${name}</div>
+        <div class="meal-meta">약 ${kcal} kcal &nbsp;·&nbsp; <button class="recipe-btn" onclick="event.stopPropagation();openRecipe('${name.replace(/'/g,"\\'")}',${m.data.kcal_rimi||kcal},${m.data.kcal_hub||kcal})">레시피 보기</button></div>
+      </div>`;
+    div.onclick=async()=>{const c=await load('checks-'+dateKey)||{};c[m.key]=!c[m.key];await save('checks-'+dateKey,c);renderToday();};
+    list.appendChild(div);
+  });
+  const pct=Math.min(100,Math.round(doneKcal/goalKcal*100));
+  const offset=170-(170*pct/100);
+  document.getElementById('ring-rimi').style.strokeDashoffset=currentUser==='rimi'?offset:170;
+  document.getElementById('ring-hub').style.strokeDashoffset=currentUser==='hub'?offset:170;
+  document.getElementById('pct-rimi').textContent=currentUser==='rimi'?pct+'%':'0%';
+  document.getElementById('pct-hub').textContent=currentUser==='hub'?pct+'%':'0%';
+  document.getElementById('kcal-rimi').textContent=currentUser==='rimi'?`${doneKcal} / ${goalKcal} kcal`:`0 / 1350 kcal`;
+  document.getElementById('kcal-hub').textContent=currentUser==='hub'?`${doneKcal} / ${goalKcal} kcal`:`0 / 1600 kcal`;
+  document.getElementById('today-greeting').textContent=pct>=100?'오늘 식단 완료! 🎉':pct>=50?'절반 이상 완료! 👍':'오늘도 잘 하고 있어요 💪';
+  renderFridge();
+}
+
+// ── Fridge ──
+function toggleFridge(){
+  const body=document.getElementById('fridge-body');
+  const icon=document.getElementById('fridge-toggle-icon');
+  const isOpen=body.style.display==='block';
+  body.style.display=isOpen?'none':'block';
+  icon.style.transform=isOpen?'':'rotate(180deg)';
+}
+
+async function addFridgeItem(){
+  const input=document.getElementById('fridge-input');
+  const name=input.value.trim();
+  if(!name)return;
+  const btn=document.getElementById('fridge-add-btn');
+  btn.disabled=true; btn.textContent='추가 중...';
+
+  // AI로 유통기한 추정
+  const prompt=`한국 냉장고 식재료 유통기한 전문가입니다. 아래 재료들의 냉장 보관 유통기한을 JSON으로만 답하세요. 마크다운 없이 순수 JSON만.
+재료: ${name}
+형식: [{"name":"재료명","days":숫자(냉장보관일수),"unit":"일"}]
+규칙: 채소류 평균, 육류는 냉장기준, 가공식품은 개봉후 기준. 여러 재료가 쉼표로 구분되면 각각 배열에 넣기.`;
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    const items=JSON.parse(data.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim());
+    const fridge=await load('fridge')||[];
+    const today=new Date();
+    items.forEach(item=>{
+      const exp=new Date(today);
+      exp.setDate(exp.getDate()+item.days);
+      fridge.push({name:item.name, days:item.days, expDate:exp.toISOString().slice(0,10), addedDate:today.toISOString().slice(0,10)});
+    });
+    await save('fridge',fridge);
+    input.value='';
+    renderFridge();
+    updateShoppingList();
+  }catch(e){
+    alert('추가 실패. 다시 시도해주세요.');
+  }finally{
+    btn.disabled=false; btn.textContent='추가';
+  }
+}
+
+async function deleteFridgeItem(idx){
+  const fridge=await load('fridge')||[];
+  fridge.splice(idx,1);
+  await save('fridge',fridge);
+  renderFridge();
+  updateShoppingList();
+}
+
+async function renderFridge(){
+  const fridge=await load('fridge')||[];
+  const countEl=document.getElementById('fridge-count');
+  countEl.textContent=fridge.length>0?`(${fridge.length}가지)`:'';
+  const container=document.getElementById('fridge-items');
+  if(fridge.length===0){
+    container.innerHTML='<div class="fridge-empty">냉장고가 비어있어요. 재료를 추가해보세요!</div>';
+    return;
+  }
+  const today=new Date(); today.setHours(0,0,0,0);
+  container.innerHTML=fridge.map((item,i)=>{
+    const exp=new Date(item.expDate); exp.setHours(0,0,0,0);
+    const diff=Math.round((exp-today)/(1000*60*60*24));
+    let expClass,expText;
+    if(diff<0){expClass='exp-danger';expText='기한 초과';}
+    else if(diff<=3){expClass='exp-soon';expText=diff===0?'오늘 까지':`${diff}일 남음`;}
+    else{expClass='exp-fresh';expText=`${diff}일 남음`;}
+    return `<div class="fridge-item">
+      <span class="fridge-item-name">${item.name}</span>
+      <span class="fridge-item-exp ${expClass}">${expText}</span>
+      <button class="fridge-item-del" onclick="deleteFridgeItem(${i})">×</button>
+    </div>`;
+  }).join('');
+}
+
+async function updateShoppingList(){
+  const fridge=await load('fridge')||[];
+  const plan=await load('diet-plan');
+  const now=new Date();
+  const todayIdx=Math.min(now.getDay()===0?6:now.getDay()-1,6);
+  const tm=plan?.week1?.[todayIdx]||getDefaultDay(todayIdx);
+  const todayMenuText=[tm.morning.name,tm.lunch.name,tm.dinner.name].join(' ');
+
+  const fridgeNames=fridge.map(f=>f.name);
+  const section=document.getElementById('shopping-section');
+  const chips=document.getElementById('shopping-chips');
+
+  if(fridgeNames.length===0){section.style.display='none';return;}
+
+  // AI로 오늘 식단에서 없는 재료 파악
+  const prompt=`냉장고에 있는 재료: ${fridgeNames.join(', ')}
+오늘 식단: ${todayMenuText}
+오늘 식단을 만들기 위해 냉장고에 없는 주요 재료들만 JSON 배열로 답하세요. 마크다운 없이 순수 JSON만.
+형식: ["재료1","재료2",...]
+규칙: 밥/물/소금/후추 등 기본 조미료는 제외. 없으면 빈 배열 [].`;
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:200,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    const missing=JSON.parse(data.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim());
+    if(missing.length===0){section.style.display='none';return;}
+    section.style.display='block';
+    chips.innerHTML=missing.map(m=>`<span class="shopping-chip">${m}</span>`).join('');
+  }catch(e){section.style.display='none';}
+}(w,btn){currentWeek=w;document.querySelectorAll('.week-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderPlan();}
+async function renderPlan(){
+  const plan=await load('diet-plan');
+  const wd=plan?.['week'+currentWeek]||Array.from({length:7},(_,i)=>getDefaultDay(i));
+  const list=document.getElementById('plan-list');
+  list.innerHTML='';
+  DAYS.forEach((day,idx)=>{
+    const d=wd[idx];
+    const rt=(d.morning.kcal_rimi||280)+(d.lunch.kcal_rimi||480)+(d.dinner.kcal_rimi||380);
+    const ht=(d.morning.kcal_hub||330)+(d.lunch.kcal_hub||530)+(d.dinner.kcal_hub||470);
+    const items=[{key:'morning',label:'아침',tag:'tag-morning',m:d.morning},{key:'lunch',label:'점심',tag:'tag-lunch',m:d.lunch},{key:'dinner',label:'저녁',tag:'tag-dinner',m:d.dinner}];
+    const div=document.createElement('div');
+    div.className='day-card';
+    div.innerHTML=`<div class="day-header"><span>${day}요일</span><span class="day-total">리미 ${rt}kcal / 남편 ${ht}kcal</span></div>
+      <div class="day-meals">${items.map(it=>`<div class="day-meal-row" onclick="openRecipe('${it.m.name.replace(/'/g,"\\'")}',${it.m.kcal_rimi||300},${it.m.kcal_hub||350})">
+        <div><span class="meal-type-tag ${it.tag}">${it.label}</span> <span style="font-size:11px;color:var(--gray-400)">레시피 보기</span></div>
+        <div class="day-meal-name">${it.m.name}</div>
+        <div class="day-meal-kcal">리미 ${it.m.kcal_rimi||300}kcal / 남편 ${it.m.kcal_hub||350}kcal</div>
+      </div>`).join('')}</div>`;
+    list.appendChild(div);
+  });
+}
+
+async function generatePlan(){
+  const btn=document.getElementById('ai-gen-btn');
+  const loading=document.getElementById('ai-loading');
+  btn.disabled=true;btn.style.display='none';loading.style.display='block';
+  const prompt=`당신은 한국 식단 전문가입니다. 다이어트를 위한 2주(14일) 식단을 JSON으로만 응답하세요. 마크다운 없이 순수 JSON만 출력하세요.
+조건: 리미 164cm 68kg→60kg 1350kcal, 남편 169cm 65kg→60kg 1600kcal, 아침 간편도시락, 점심 한식외식, 저녁 15분조리, 우유/두유/순대/닭발/오버나이트오츠 제외, 한국식재료.
+출력: {"week1":[{"morning":{"name":"메뉴","kcal_rimi":숫자,"kcal_hub":숫자},"lunch":{"name":"메뉴","kcal_rimi":숫자,"kcal_hub":숫자},"dinner":{"name":"메뉴","kcal_rimi":숫자,"kcal_hub":숫자}},...7일],"week2":[...7일]}`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:3000,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    const plan=JSON.parse(data.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim());
+    await save('diet-plan',plan);renderPlan();
+  }catch(e){alert('식단 생성에 실패했어요. 잠시 후 다시 시도해주세요.');}
+  finally{btn.disabled=false;btn.style.display='flex';loading.style.display='none';}
+}
+
+async function saveWeight(){
+  const rv=parseFloat(document.getElementById('input-rimi').value);
+  const hv=parseFloat(document.getElementById('input-hub').value);
+  if(isNaN(rv)&&isNaN(hv)){alert('몸무게를 입력해주세요.');return;}
+  const weights=await load('weights')||[];
+  const today=new Date().toISOString().slice(0,10);
+  const ei=weights.findIndex(w=>w.date===today);
+  const entry={date:today,rimi:isNaN(rv)?null:rv,hub:isNaN(hv)?null:hv};
+  if(ei>=0)weights[ei]=entry;else weights.push(entry);
+  await save('weights',weights);
+  document.getElementById('input-rimi').value='';document.getElementById('input-hub').value='';
+  renderWeightChart();renderToday();
+}
+
+async function renderWeightChart(){
+  const weights=await load('weights')||[];
+  const has=weights.length>0;
+  document.getElementById('chart-card').style.display=has?'block':'none';
+  document.getElementById('history-card').style.display=has?'block':'none';
+  document.getElementById('empty-weight-card').style.display=has?'none':'block';
+  if(!has)return;
+  document.getElementById('weight-history').innerHTML=[...weights].reverse().slice(0,7).map((w,i,arr)=>
+    `<div class="history-row"><span style="color:var(--gray-500)">${w.date}</span><span style="color:var(--gray-700)">리미 ${w.rimi?w.rimi+'kg':'-'} &nbsp;|&nbsp; 남편 ${w.hub?w.hub+'kg':'-'}</span></div>`
+  ).join('');
+  if(weightChart)weightChart.destroy();
+  const ctx=document.getElementById('weight-chart').getContext('2d');
+  weightChart=new Chart(ctx,{type:'line',data:{labels:weights.map(w=>w.date.slice(5)),datasets:[
+    {label:'리미',data:weights.map(w=>w.rimi),borderColor:'#374151',backgroundColor:'rgba(55,65,81,0.07)',tension:0.3,pointRadius:4,pointBackgroundColor:'#374151'},
+    {label:'남편',data:weights.map(w=>w.hub),borderColor:'#9ca3af',backgroundColor:'rgba(156,163,175,0.07)',tension:0.3,pointRadius:4,pointBackgroundColor:'#9ca3af'},
+    {label:'목표',data:weights.map(()=>60),borderColor:'#e5e7eb',borderDash:[4,4],pointRadius:0,borderWidth:1.5}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:11},boxWidth:12}}},scales:{y:{min:55,max:72,ticks:{font:{size:11},callback:v=>v+'kg'},grid:{color:'rgba(0,0,0,0.04)'}},x:{ticks:{font:{size:10}},grid:{display:false}}}}});
+}
+
+function setupShare(){document.getElementById('share-link-box').textContent=window.location.href.split('?')[0]+'?shared=1';}
+function copyLink(){
+  navigator.clipboard.writeText(window.location.href.split('?')[0]+'?shared=1').then(()=>{
+    const btn=document.querySelector('.copy-btn');btn.textContent='✅ 복사 완료!';setTimeout(()=>btn.textContent='📋 링크 복사하기',2000);
+  });
+}
+
+const recipeCache={};
+async function openRecipe(mealName,kcalRimi,kcalHub){
+  document.getElementById('recipe-modal-title').textContent=mealName;
+  document.getElementById('recipe-modal').classList.add('open');
+  if(recipeCache[mealName]){renderRecipe(recipeCache[mealName],kcalRimi,kcalHub);return;}
+  document.getElementById('recipe-modal-body').innerHTML='<div class="recipe-loading">🤖 레시피를 불러오는 중...</div>';
+  const prompt=`한국 다이어트 식단 레시피 전문가입니다. 메뉴: ${mealName}. 다이어트용 15분이내 조리, 우유/두유 금지, 한국 가정 재료. JSON만 출력: {"ingredients":["재료 (양)"],"steps":["단계"],"tip":"팁"}`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    const recipe=JSON.parse(data.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim());
+    recipeCache[mealName]=recipe;renderRecipe(recipe,kcalRimi,kcalHub);
+  }catch(e){document.getElementById('recipe-modal-body').innerHTML='<div class="recipe-loading">레시피를 불러오지 못했어요.<br>다시 눌러보세요.</div>';}
+}
+function renderRecipe(recipe,kcalRimi,kcalHub){
+  document.getElementById('recipe-modal-body').innerHTML=`
+    <div class="kcal-badge"><span>리미 <strong>${kcalRimi} kcal</strong></span><span>남편 <strong>${kcalHub} kcal</strong></span></div>
+    <div class="recipe-section"><div class="recipe-section-title">재료</div><div class="ingredient-list">${(recipe.ingredients||[]).map(i=>`<span class="ingredient-chip">${i}</span>`).join('')}</div></div>
+    <div class="recipe-section"><div class="recipe-section-title">만드는 법</div>${(recipe.steps||[]).map((s,i)=>`<div class="step-item"><div class="step-num">${i+1}</div><div class="step-text">${s}</div></div>`).join('')}</div>
+    ${recipe.tip?`<div class="recipe-tip">💡 ${recipe.tip}</div>`:''}`;
+}
+function closeRecipe(){document.getElementById('recipe-modal').classList.remove('open');}
+function closeRecipeIfOutside(e){if(e.target===document.getElementById('recipe-modal'))closeRecipe();}
+
+renderToday();
+setTimeout(updateShoppingList, 500);
+</script>
+</body>
+</html>
