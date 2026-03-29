@@ -422,42 +422,38 @@ canvas { width: 100% !important; }
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+window.addEventListener('load', function() {
+  const firebaseConfig = {
+    apiKey: "AIzaSyDE0n13nOW5x02y3MaIkvet2epn2qSWOrA",
+    authDomain: "limmit01-5fb1c.firebaseapp.com",
+    databaseURL: "https://limmit01-5fb1c-default-rtdb.firebaseio.com",
+    projectId: "limmit01-5fb1c",
+    storageBucket: "limmit01-5fb1c.firebasestorage.app",
+    messagingSenderId: "55615464592",
+    appId: "1:55615464592:web:f5618797932c06459ea415"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDE0n13nOW5x02y3MaIkvet2epn2qSWOrA",
-  authDomain: "limmit01-5fb1c.firebaseapp.com",
-  databaseURL: "https://limmit01-5fb1c-default-rtdb.firebaseio.com",
-  projectId: "limmit01-5fb1c",
-  storageBucket: "limmit01-5fb1c.firebasestorage.app",
-  messagingSenderId: "55615464592",
-  appId: "1:55615464592:web:f5618797932c06459ea415"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-// ── Firebase load/save (전역 노출) ──
-window.fbLoad = async function(k) {
-  try {
-    const snap = await get(ref(db, 'diet/' + k));
-    return snap.exists() ? snap.val() : null;
-  } catch { return null; }
-};
-window.fbSave = async function(k, v) {
-  try { await set(ref(db, 'diet/' + k), v); } catch(e) { console.error(e); }
-};
-
-// 실시간 구독 (몸무게/냉장고는 상대방 입력도 즉시 반영)
-window.fbWatch = function(k, cb) {
-  onValue(ref(db, 'diet/' + k), snap => cb(snap.exists() ? snap.val() : null));
-};
-
-// 초기화 트리거 (Firebase 로드 완료 후)
-window._fbReady = true;
-if (typeof window._initApp === 'function') window._initApp();
+  window.fbLoad = async function(k) {
+    try {
+      const snap = await db.ref('diet/' + k).get();
+      return snap.exists() ? snap.val() : null;
+    } catch(e) { console.error('fbLoad error:', e); return null; }
+  };
+  window.fbSave = async function(k, v) {
+    try { await db.ref('diet/' + k).set(v); }
+    catch(e) { console.error('fbSave error:', e); }
+  };
+  window.fbWatch = function(k, cb) {
+    db.ref('diet/' + k).on('value', snap => cb(snap.exists() ? snap.val() : null));
+  };
+  window._fbReady = true;
+  if (typeof window._initApp === 'function') window._initApp();
+});
 </script>
 <script>
 // ── 재료 이모지 맵 ──
